@@ -7,11 +7,14 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Dimensions,
 } from "react-native";
 import validateEmail from "../helpers/validateEmail";
 
+const { width, height } = Dimensions.get("window");
+
 function RegisterScreen({ navigation }) {
-  const loggingIn = false;
+  const [loggingIn, setLoggingIn] = React.useState(false);
   const bootstrapAsync = async () => {
     // const userStorage = await checkAsyncStorage();
     // if (userStorage.token) {
@@ -285,11 +288,12 @@ function RegisterScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   registerForm: {
-    minHeight: "100%",
+    height: height,
     width: "100%",
     backgroundColor: "#ffffff",
     paddingVertical: 0,
     paddingHorizontal: 50,
+    paddingTop: 40,
   },
   heading: {
     color: "#2E0B5B",
@@ -299,8 +303,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   form: {
-    marginVertical: 10,
-    minHeight: "50%",
+    marginVertical: 5,
+    minHeight: height * 0.5,
   },
   inputContainer: {
     borderColor: "rgba(166, 163, 163, 0.45)",

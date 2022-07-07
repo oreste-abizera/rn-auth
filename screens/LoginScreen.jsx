@@ -16,7 +16,8 @@ import axios from "axios";
 
 let height = Dimensions.get("screen").height;
 
-function LoginScreen({ navigation, loggingIn, login, loggedIn }) {
+function LoginScreen({ navigation }) {
+  const [loggingIn, setLoggingIn] = React.useState(false);
   const bootstrapAsync = async () => {
     // const userStorage = await checkAsyncStorage();
     // if (userStorage.token) {
@@ -82,6 +83,7 @@ function LoginScreen({ navigation, loggingIn, login, loggedIn }) {
     if (isEnabledSubmit) {
       const { password, email } = state;
       try {
+        setLoggingIn(true);
         let response = await axios.post(
           "http://10.0.2.2:8000/api/v1/auth/login",
           {
@@ -101,6 +103,8 @@ function LoginScreen({ navigation, loggingIn, login, loggedIn }) {
           "Error",
           error?.response?.data?.error || "Something went wrong"
         );
+      } finally {
+        setLoggingIn(false);
       }
     } else {
       readAllInputs();
