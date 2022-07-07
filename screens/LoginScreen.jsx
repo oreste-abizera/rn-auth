@@ -10,6 +10,8 @@ import {
   Dimensions,
   Alert,
 } from "react-native";
+import validateEmail from "../helpers/validateEmail";
+import axios from "axios";
 // import checkAsyncStorage from "../helpers/CheckAsyncStorage";
 
 let height = Dimensions.get("screen").height;
@@ -26,13 +28,13 @@ function LoginScreen({ navigation, loggingIn, login, loggedIn }) {
     bootstrapAsync();
   }, []);
 
-  const [state, setstate] = React.useState({ phone_number: "", password: "" });
+  const [state, setstate] = React.useState({ email: "", password: "" });
   const [touched, settouched] = React.useState({
-    phone_number: false,
+    email: false,
     password: false,
   });
 
-  const { phone_number, password } = state;
+  const { email, password } = state;
 
   const changeState = (key, value) => {
     setstate({ ...state, [key]: value });
@@ -44,13 +46,11 @@ function LoginScreen({ navigation, loggingIn, login, loggedIn }) {
   };
 
   const errors = {
-    phone_number: touched.phone_number
-      ? !phone_number
-        ? "Phone Number is required"
-        : phone_number.length !== 12
-        ? "Phone Number must be 12 characters"
-        : phone_number.match(/\d/g)?.length !== 12
-        ? "Phone Number is invalid"
+    email: touched.email
+      ? !email
+        ? "Email is required"
+        : !validateEmail(email)
+        ? "Email is invalid"
         : ""
       : "",
     password: touched.password
@@ -63,15 +63,10 @@ function LoginScreen({ navigation, loggingIn, login, loggedIn }) {
   };
 
   const isEnabledSubmit =
-    !loggingIn &&
-    phone_number.length === 12 &&
-    password.length >= 5 &&
-    phone_number.match(/\d/g)?.length === 12;
+    !loggingIn && validateEmail(email) && password.length >= 5;
 
-  const phone_numberErrorStyles =
-    touched.phone_number && errors.phone_number
-      ? styles.inputContainerError
-      : {};
+  const emailErrorStyles =
+    touched.email && errors.email ? styles.inputContainerError : {};
   const passwordErrorStyles =
     touched.password && errors.password ? styles.inputContainerError : {};
 
@@ -85,9 +80,28 @@ function LoginScreen({ navigation, loggingIn, login, loggedIn }) {
 
   const signInAsync = async () => {
     if (isEnabledSubmit) {
-      const { password, phone_number } = state;
-      console.log(state);
-      await login(phone_number, password);
+      const { password, email } = state;
+      try {
+        let response = await axios.post(
+          "http://10.0.2.2:8000/api/v1/auth/login",
+          {
+            email,
+            password,
+          }
+        );
+        if (response.status === 200) {
+          //   login(response.data.token);
+          navigation.navigate("Home");
+        } else {
+          Alert.alert("Login failed", "Please check your credentials");
+        }
+      } catch (error) {
+        console.log(error.response);
+        Alert.alert(
+          "Error",
+          error?.response?.data?.error || "Something went wrong"
+        );
+      }
     } else {
       readAllInputs();
     }
@@ -101,20 +115,18 @@ function LoginScreen({ navigation, loggingIn, login, loggedIn }) {
       ></Image> */}
       <Text style={styles.heading}>Sign In</Text>
       <View style={styles.form}>
-        <Text style={styles.inputLabel}>Telephone</Text>
-        <View style={[styles.inputContainer, phone_numberErrorStyles]}>
+        <Text style={styles.inputLabel}>Email</Text>
+        <View style={[styles.inputContainer, emailErrorStyles]}>
           <TextInput
             defaultValue=""
             style={styles.input}
-            placeholder="Enter Your Telephone Number"
-            value={phone_number}
-            onChangeText={(value) => changeState("phone_number", value)}
-            onBlur={() => touchInput("phone_number")}
+            placeholder="Enter Your Email"
+            value={email}
+            onChangeText={(value) => changeState("email", value)}
+            onBlur={() => touchInput("email")}
           ></TextInput>
         </View>
-        {errors.phone_number ? (
-          <Text style={styles.error}>{errors.phone_number}</Text>
-        ) : null}
+        {errors.email ? <Text style={styles.error}>{errors.email}</Text> : null}
 
         <Text style={styles.inputLabel}>Password</Text>
         <View style={[styles.inputContainer, passwordErrorStyles]}>
